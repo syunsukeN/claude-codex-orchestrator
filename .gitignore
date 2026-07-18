@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build and test output
+dist/
+out/
+coverage/
+.vscode-test/
+*.vsix
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Tool-local settings
+.claude/settings.local.json
+
+# Logs and OS metadata
+*.log
+.DS_Store

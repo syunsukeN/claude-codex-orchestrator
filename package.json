@@ -1,0 +1,73 @@
+{
+  "name": "claude-codex-orchestrator",
+  "displayName": "Claude Codex Orchestrator",
+  "description": "Personal VSCode extension to orchestrate Codex and Claude CLI in a single thread.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./dist/extension.js",
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "claudeCodexOrchestrator",
+          "title": "Claude Codex Orchestrator",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "claudeCodexOrchestrator": [
+        {
+          "id": "claudeCodexOrchestrator.projects",
+          "name": "Projects"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "claudeCodexOrchestrator.openChat",
+        "title": "Open Chat",
+        "category": "Claude Codex Orchestrator"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "npm run build:extension && npm run build:webview",
+    "build:extension": "node esbuild.mjs",
+    "build:webview": "vite build",
+    "watch:extension": "node esbuild.mjs --watch",
+    "test:unit": "vitest run",
+    "pretest:integration": "npm run build && tsc -p tsconfig.integration.json",
+    "test:integration": "node ./out/test/integration/runTest.js",
+    "test": "npm run test:unit && npm run test:integration",
+    "vscode:prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/svelte": "^5.2.7",
+    "@types/mocha": "^10.0.9",
+    "@types/node": "^20.17.9",
+    "@types/sinon": "^17.0.3",
+    "@types/vscode": "^1.90.0",
+    "@vscode/test-electron": "^2.4.1",
+    "esbuild": "^0.24.0",
+    "glob": "^11.0.0",
+    "jsdom": "^25.0.1",
+    "mocha": "^10.8.2",
+    "sinon": "^19.0.2",
+    "svelte": "^5.2.9",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "vitest": "^3.0.0"
+  }
+}

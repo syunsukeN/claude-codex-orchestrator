@@ -1,0 +1,15 @@
+.vscode/**
+src/**
+test/**
+out/**
+.claude/**
+*.map
+tsconfig*.json
+vite.config.mts
+vitest.config.mts
+esbuild.mjs
+.gitignore
+**/*.ts
+**/*.svelte
+node_modules/**
+!dist/**
