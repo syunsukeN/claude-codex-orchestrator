@@ -1,0 +1,4 @@
+interface:
+  display_name: "Feature Changeを検証"
+  short_description: "新しいセッションでSpec・受入テスト・実装差分を独立検証"
+  default_prompt: "$verify-feature-changeを使って、新しいセッションで指定された検証を実行してください。"

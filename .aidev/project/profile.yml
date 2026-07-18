@@ -1,0 +1,38 @@
+schema_version: 1
+project_id: claude-codex-orchestrator
+default_risk_level: medium
+
+paths:
+  specs: .aidev/specs
+  work_items: .aidev/work-items
+  closures: .aidev/closures
+  learning_candidates: .aidev/learning-candidates
+  tests:
+    - test
+
+machine_checks:
+  - npm run build
+  - npm run test:unit
+  - npm run test:integration
+
+capabilities:
+  production_environment:
+    value: false
+    assessment: repository-inspected
+    evidence:
+      - 拡張機能はローカルで認証済みCLIを起動し、本番デプロイとの連携を持たない。
+  personal_data:
+    value: unknown
+    assessment: unassessed
+    evidence:
+      - PromptとWorkspace内容にユーザー由来情報が含まれる可能性があるため、機能ごとに確認する。
+  payments:
+    value: false
+    assessment: repository-inspected
+    evidence:
+      - package.jsonとプロジェクト定義に決済連携がない。
+  external_messages:
+    value: false
+    assessment: repository-inspected
+    evidence:
+      - 拡張機能はローカルCLI出力を表示し、顧客向けメッセージ送信機能を持たない。

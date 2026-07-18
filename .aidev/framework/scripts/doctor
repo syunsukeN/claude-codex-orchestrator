@@ -1,0 +1,388 @@
+#!/usr/bin/env python3
+"""RC2の導入構造と成果物の参照関係を検査する。"""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+
+AC_RE = re.compile(r"\bAC-[A-Z0-9]+(?:-[A-Z0-9]+)+\b")
+HEADING_AC_RE = re.compile(r"^#{2,6}\s+(AC-[A-Z0-9]+(?:-[A-Z0-9]+)+)\b", re.MULTILINE)
+MANAGED_START_RE = re.compile(r"<!--\s*aidev-managed:start\s+version=([^\s]+)\s*-->")
+
+
+@dataclass
+class Result:
+    level: str
+    message: str
+
+
+class Doctor:
+    def __init__(self, root: Path) -> None:
+        self.root = root.resolve()
+        self.results: list[Result] = []
+
+    def pass_(self, message: str) -> None:
+        self.results.append(Result("PASS", message))
+
+    def warn(self, message: str) -> None:
+        self.results.append(Result("WARN", message))
+
+    def fail(self, message: str) -> None:
+        self.results.append(Result("FAIL", message))
+
+    def require_file(self, relative: str) -> Path | None:
+        path = self.root / relative
+        if path.is_file():
+            self.pass_(f"{relative}が存在します")
+            return path
+        self.fail(f"{relative}がありません")
+        return None
+
+    def run(self) -> int:
+        lock_path = self.require_file(".aidev/framework.lock")
+        profile_path = self.require_file(".aidev/project/profile.yml")
+        installed_version_path = self.require_file(".aidev/framework/VERSION")
+
+        lock_version = nested_scalar(read_text(lock_path), "framework", "version") if lock_path else None
+        installed_version = read_text(installed_version_path).strip() if installed_version_path else None
+
+        if lock_version and installed_version:
+            if lock_version == installed_version:
+                self.pass_(f"framework versionがlockと一致しています（{lock_version}）")
+            else:
+                self.fail(
+                    f"framework versionが一致しません：lock={lock_version}、installed={installed_version}"
+                )
+        elif lock_path:
+            self.fail("framework.lockにframework.versionがありません")
+
+        if lock_path:
+            lock_text = read_text(lock_path)
+            if "replace-at-install" in lock_text or "replace-after-merge" in lock_text:
+                self.warn("framework.lockに導入用placeholderが残っています")
+
+        self.check_managed_file("AGENTS.md", lock_version)
+        self.check_managed_file("CLAUDE.md", lock_version)
+
+        paths = profile_paths(read_text(profile_path)) if profile_path else {}
+        spec_dir = self.root / paths.get("specs", ".aidev/specs")
+        work_item_dir = self.root / paths.get("work_items", ".aidev/work-items")
+        closure_dir = self.root / paths.get("closures", ".aidev/closures")
+        test_dirs = [self.root / item for item in paths.get("tests", ["tests"])]
+
+        specs, all_acs = self.read_specs(spec_dir)
+        work_items, assigned_acs = self.read_work_items(work_item_dir, specs)
+        self.compare_ac_sets(all_acs, assigned_acs, "Work Item")
+
+        test_acs = self.read_test_references(test_dirs)
+        self.compare_ac_sets(all_acs, test_acs, "テストソース")
+
+        self.read_closures(closure_dir, specs, work_items)
+
+        for result in self.results:
+            print(f"[{result.level}] {result.message}")
+
+        failures = sum(result.level == "FAIL" for result in self.results)
+        warnings = sum(result.level == "WARN" for result in self.results)
+        print(f"\n結果：失敗{failures}件、警告{warnings}件")
+        return 1 if failures else 0
+
+    def check_managed_file(self, name: str, lock_version: str | None) -> None:
+        path = self.root / name
+        if not path.is_file():
+            self.fail(f"{name}がありません")
+            return
+        text = read_text(path)
+        starts = MANAGED_START_RE.findall(text)
+        end_count = text.count("<!-- aidev-managed:end -->")
+        if len(starts) != 1 or end_count != 1:
+            self.fail(f"{name}には完全なaidev管理ブロックが1つだけ必要です")
+            return
+        if lock_version and starts[0] != lock_version:
+            self.fail(
+                f"{name}の管理ブロックversion {starts[0]}がlock {lock_version}と一致しません"
+            )
+            return
+        self.pass_(f"{name}にlock版と一致する管理ブロックが1つあります")
+
+    def read_specs(self, directory: Path) -> tuple[dict[str, Path], dict[str, Path]]:
+        if not directory.is_dir():
+            self.fail(f"Specディレクトリ{relative_to_root(directory, self.root)}がありません")
+            return {}, {}
+
+        specs: dict[str, Path] = {}
+        acs: dict[str, Path] = {}
+        files = sorted(directory.glob("*.md"))
+        if not files:
+            self.fail(f"{relative_to_root(directory, self.root)}にFeature Change Specがありません")
+            return specs, acs
+
+        for path in files:
+            text = read_text(path)
+            metadata = frontmatter(text)
+            feature_id = scalar(metadata.get("id"))
+            if not feature_id:
+                self.fail(f"{relative_to_root(path, self.root)}のfrontmatterにidがありません")
+                continue
+            if feature_id in specs:
+                self.fail(f"Feature ID {feature_id}が重複しています")
+            else:
+                specs[feature_id] = path
+
+            file_acs = HEADING_AC_RE.findall(text)
+            if not file_acs:
+                self.fail(f"{relative_to_root(path, self.root)}にAC見出しがありません")
+            for ac_id in file_acs:
+                if ac_id in acs:
+                    self.fail(f"AC-ID {ac_id}が重複しています")
+                else:
+                    acs[ac_id] = path
+
+        if specs and acs:
+            self.pass_(f"Feature Spec {len(specs)}件と重複しないAC {len(acs)}件を確認しました")
+        return specs, acs
+
+    def read_work_items(
+        self, directory: Path, specs: dict[str, Path]
+    ) -> tuple[dict[str, Path], set[str]]:
+        if not directory.is_dir():
+            self.fail(f"Work Itemディレクトリ{relative_to_root(directory, self.root)}がありません")
+            return {}, set()
+
+        work_items: dict[str, Path] = {}
+        assigned: set[str] = set()
+        files = sorted(directory.glob("*.md"))
+        if not files:
+            self.fail(f"{relative_to_root(directory, self.root)}にWork Itemがありません")
+            return work_items, assigned
+
+        for path in files:
+            text = read_text(path)
+            metadata = frontmatter(text)
+            item_id = scalar(metadata.get("id"))
+            feature_id = scalar(metadata.get("feature_spec"))
+            display = relative_to_root(path, self.root)
+
+            if not item_id:
+                self.fail(f"{display}のfrontmatterにidがありません")
+            elif item_id in work_items:
+                self.fail(f"Work Item ID {item_id}が重複しています")
+            else:
+                work_items[item_id] = path
+
+            if not feature_id or feature_id not in specs:
+                self.fail(f"{display}が不明なFeature Spec {feature_id or '(未設定)'}を参照しています")
+
+            if not re.search(r"^##\s+Implementation Plan\s*$", text, re.MULTILINE):
+                self.fail(f"{display}にImplementation Planセクションがありません")
+
+            section = markdown_section(text, "Assigned Acceptance Criteria")
+            item_acs = set(AC_RE.findall(section))
+            if not item_acs:
+                self.fail(f"{display}に担当AC-IDがありません")
+            assigned.update(item_acs)
+
+        if work_items:
+            self.pass_(f"Spec参照を持つWork Item {len(work_items)}件を確認しました")
+        return work_items, assigned
+
+    def read_test_references(self, directories: list[Path]) -> set[str]:
+        found: set[str] = set()
+        files_read = 0
+        for directory in directories:
+            if not directory.is_dir():
+                self.fail(f"テストディレクトリ{relative_to_root(directory, self.root)}がありません")
+                continue
+            for path in directory.rglob("*"):
+                relative_parts = path.relative_to(directory).parts
+                if not path.is_file() or any(part.startswith(".") for part in relative_parts):
+                    continue
+                try:
+                    text = path.read_text(encoding="utf-8")
+                except (UnicodeDecodeError, OSError):
+                    continue
+                files_read += 1
+                found.update(AC_RE.findall(text))
+        if files_read:
+            self.pass_(f"AC参照を探すためテストファイル{files_read}件を確認しました")
+        return found
+
+    def compare_ac_sets(self, expected: dict[str, Path], actual: set[str], source: str) -> None:
+        missing = sorted(set(expected) - actual)
+        unknown = sorted(actual - set(expected))
+        if missing:
+            self.fail(f"{source}から参照されていないAC：{', '.join(missing)}")
+        else:
+            self.pass_(f"すべてのSpec ACが{source}から参照されています")
+        if unknown:
+            self.fail(f"{source}に不明なAC参照があります：{', '.join(unknown)}")
+
+    def read_closures(
+        self, directory: Path, specs: dict[str, Path], work_items: dict[str, Path]
+    ) -> None:
+        if not directory.is_dir():
+            self.fail(f"Closureディレクトリ{relative_to_root(directory, self.root)}がありません")
+            return
+        files = sorted(directory.glob("*.md"))
+        if not files:
+            self.fail(f"{relative_to_root(directory, self.root)}にTask Closure Noteがありません")
+            return
+
+        referenced_specs: set[str] = set()
+        referenced_items: set[str] = set()
+        for path in files:
+            metadata = frontmatter(read_text(path))
+            display = relative_to_root(path, self.root)
+            feature_id = scalar(metadata.get("feature_spec"))
+            item_ids = string_list(metadata.get("work_items"))
+            revision = scalar(metadata.get("source_revision"))
+
+            if not feature_id or feature_id not in specs:
+                self.fail(f"{display}が不明なFeature Spec {feature_id or '(未設定)'}を参照しています")
+            else:
+                referenced_specs.add(feature_id)
+
+            if not item_ids:
+                self.fail(f"{display}にWork Item参照がありません")
+            for item_id in item_ids:
+                if item_id not in work_items:
+                    self.fail(f"{display}が不明なWork Item {item_id}を参照しています")
+                else:
+                    referenced_items.add(item_id)
+
+            if not revision or revision.startswith("replace-"):
+                self.fail(f"{display}に具体的なsource_revisionがありません")
+
+        missing_specs = sorted(set(specs) - referenced_specs)
+        missing_items = sorted(set(work_items) - referenced_items)
+        if missing_specs:
+            self.fail(f"Closure Noteから参照されていないFeature Spec：{', '.join(missing_specs)}")
+        if missing_items:
+            self.fail(f"Closure Noteから参照されていないWork Item：{', '.join(missing_items)}")
+        if not missing_specs and not missing_items:
+            self.pass_(f"Closure Note {len(files)}件がすべてのSpecとWork Itemを参照しています")
+
+
+def read_text(path: Path | None) -> str:
+    return path.read_text(encoding="utf-8") if path else ""
+
+
+def scalar(value: object) -> str | None:
+    return value if isinstance(value, str) and value else None
+
+
+def string_list(value: object) -> list[str]:
+    return [item for item in value if isinstance(item, str)] if isinstance(value, list) else []
+
+
+def frontmatter(text: str) -> dict[str, object]:
+    if not text.startswith("---\n"):
+        return {}
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        return {}
+    data: dict[str, object] = {}
+    active_list: str | None = None
+    for raw_line in text[4:end].splitlines():
+        list_match = re.match(r"^\s+-\s+(.+?)\s*$", raw_line)
+        if list_match and active_list:
+            current = data.setdefault(active_list, [])
+            if isinstance(current, list):
+                current.append(unquote(list_match.group(1)))
+            continue
+        item_match = re.match(r"^([A-Za-z_][A-Za-z0-9_-]*):\s*(.*?)\s*$", raw_line)
+        if not item_match:
+            continue
+        key, value = item_match.groups()
+        if value:
+            data[key] = unquote(value)
+            active_list = None
+        else:
+            data[key] = []
+            active_list = key
+    return data
+
+
+def unquote(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        return value[1:-1]
+    return value
+
+
+def nested_scalar(text: str, parent: str, child: str) -> str | None:
+    in_parent = False
+    for raw_line in text.splitlines():
+        if re.match(rf"^{re.escape(parent)}:\s*$", raw_line):
+            in_parent = True
+            continue
+        if in_parent and raw_line and not raw_line.startswith((" ", "\t")):
+            break
+        if in_parent:
+            match = re.match(rf"^\s+{re.escape(child)}:\s*(.+?)\s*$", raw_line)
+            if match:
+                return unquote(match.group(1))
+    return None
+
+
+def profile_paths(text: str) -> dict[str, object]:
+    result: dict[str, object] = {}
+    in_paths = False
+    active_list: str | None = None
+    for raw_line in text.splitlines():
+        if raw_line == "paths:":
+            in_paths = True
+            continue
+        if in_paths and raw_line and not raw_line.startswith((" ", "\t")):
+            break
+        if not in_paths:
+            continue
+        item_match = re.match(r"^\s{4}-\s+(.+?)\s*$", raw_line)
+        if item_match and active_list:
+            current = result.setdefault(active_list, [])
+            if isinstance(current, list):
+                current.append(unquote(item_match.group(1)))
+            continue
+        key_match = re.match(r"^\s{2}([A-Za-z_][A-Za-z0-9_-]*):\s*(.*?)\s*$", raw_line)
+        if key_match:
+            key, value = key_match.groups()
+            if value:
+                result[key] = unquote(value)
+                active_list = None
+            else:
+                result[key] = []
+                active_list = key
+    return result
+
+
+def markdown_section(text: str, heading: str) -> str:
+    match = re.search(
+        rf"^##\s+{re.escape(heading)}\s*$\n(.*?)(?=^##\s+|\Z)",
+        text,
+        re.MULTILINE | re.DOTALL,
+    )
+    return match.group(1) if match else ""
+
+
+def relative_to_root(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="AI Development Framework RC2導入プロジェクトの構造を検査します。"
+    )
+    parser.add_argument("project", nargs="?", default=".", help="対象プロジェクトのルート")
+    args = parser.parse_args()
+    return Doctor(Path(args.project)).run()
+
+
+if __name__ == "__main__":
+    sys.exit(main())
