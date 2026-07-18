@@ -1,0 +1,4 @@
+interface:
+  display_name: "Define Feature Change"
+  short_description: "Create a testable Feature Change Spec"
+  default_prompt: "Use $define-feature-change to turn this request into an approved Feature Change Spec."

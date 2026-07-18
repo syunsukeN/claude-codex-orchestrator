@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan Work Items"
+  short_description: "Plan independently verifiable work items"
+  default_prompt: "Use $plan-work-items to split the approved Spec and plan each Work Item."

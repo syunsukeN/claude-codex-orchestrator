@@ -1,0 +1,4 @@
+interface:
+  display_name: "Implement Work Item"
+  short_description: "Implement an approved scoped work item"
+  default_prompt: "Use $implement-work-item to implement this approved Work Item and report evidence."

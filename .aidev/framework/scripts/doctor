@@ -1,0 +1,388 @@
+#!/usr/bin/env python3
+"""Validate RC1 installation structure and artifact references."""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+
+AC_RE = re.compile(r"\bAC-[A-Z0-9]+(?:-[A-Z0-9]+)+\b")
+HEADING_AC_RE = re.compile(r"^#{2,6}\s+(AC-[A-Z0-9]+(?:-[A-Z0-9]+)+)\b", re.MULTILINE)
+MANAGED_START_RE = re.compile(r"<!--\s*aidev-managed:start\s+version=([^\s]+)\s*-->")
+
+
+@dataclass
+class Result:
+    level: str
+    message: str
+
+
+class Doctor:
+    def __init__(self, root: Path) -> None:
+        self.root = root.resolve()
+        self.results: list[Result] = []
+
+    def pass_(self, message: str) -> None:
+        self.results.append(Result("PASS", message))
+
+    def warn(self, message: str) -> None:
+        self.results.append(Result("WARN", message))
+
+    def fail(self, message: str) -> None:
+        self.results.append(Result("FAIL", message))
+
+    def require_file(self, relative: str) -> Path | None:
+        path = self.root / relative
+        if path.is_file():
+            self.pass_(f"found {relative}")
+            return path
+        self.fail(f"missing {relative}")
+        return None
+
+    def run(self) -> int:
+        lock_path = self.require_file(".aidev/framework.lock")
+        profile_path = self.require_file(".aidev/project/profile.yml")
+        installed_version_path = self.require_file(".aidev/framework/VERSION")
+
+        lock_version = nested_scalar(read_text(lock_path), "framework", "version") if lock_path else None
+        installed_version = read_text(installed_version_path).strip() if installed_version_path else None
+
+        if lock_version and installed_version:
+            if lock_version == installed_version:
+                self.pass_(f"framework version matches lock ({lock_version})")
+            else:
+                self.fail(
+                    f"framework version mismatch: lock={lock_version}, installed={installed_version}"
+                )
+        elif lock_path:
+            self.fail("framework.lock does not contain framework.version")
+
+        if lock_path:
+            lock_text = read_text(lock_path)
+            if "replace-at-install" in lock_text or "replace-after-merge" in lock_text:
+                self.warn("framework.lock still contains installation placeholders")
+
+        self.check_managed_file("AGENTS.md", lock_version)
+        self.check_managed_file("CLAUDE.md", lock_version)
+
+        paths = profile_paths(read_text(profile_path)) if profile_path else {}
+        spec_dir = self.root / paths.get("specs", ".aidev/specs")
+        work_item_dir = self.root / paths.get("work_items", ".aidev/work-items")
+        closure_dir = self.root / paths.get("closures", ".aidev/closures")
+        test_dirs = [self.root / item for item in paths.get("tests", ["tests"])]
+
+        specs, all_acs = self.read_specs(spec_dir)
+        work_items, assigned_acs = self.read_work_items(work_item_dir, specs)
+        self.compare_ac_sets(all_acs, assigned_acs, "Work Items")
+
+        test_acs = self.read_test_references(test_dirs)
+        self.compare_ac_sets(all_acs, test_acs, "test source")
+
+        self.read_closures(closure_dir, specs, work_items)
+
+        for result in self.results:
+            print(f"[{result.level}] {result.message}")
+
+        failures = sum(result.level == "FAIL" for result in self.results)
+        warnings = sum(result.level == "WARN" for result in self.results)
+        print(f"\nSummary: {failures} failure(s), {warnings} warning(s)")
+        return 1 if failures else 0
+
+    def check_managed_file(self, name: str, lock_version: str | None) -> None:
+        path = self.root / name
+        if not path.is_file():
+            self.fail(f"missing {name}")
+            return
+        text = read_text(path)
+        starts = MANAGED_START_RE.findall(text)
+        end_count = text.count("<!-- aidev-managed:end -->")
+        if len(starts) != 1 or end_count != 1:
+            self.fail(f"{name} must contain exactly one complete aidev managed block")
+            return
+        if lock_version and starts[0] != lock_version:
+            self.fail(
+                f"{name} managed block version {starts[0]} does not match lock {lock_version}"
+            )
+            return
+        self.pass_(f"{name} has one managed block with the locked version")
+
+    def read_specs(self, directory: Path) -> tuple[dict[str, Path], dict[str, Path]]:
+        if not directory.is_dir():
+            self.fail(f"missing Spec directory {relative_to_root(directory, self.root)}")
+            return {}, {}
+
+        specs: dict[str, Path] = {}
+        acs: dict[str, Path] = {}
+        files = sorted(directory.glob("*.md"))
+        if not files:
+            self.fail(f"no Feature Change Specs in {relative_to_root(directory, self.root)}")
+            return specs, acs
+
+        for path in files:
+            text = read_text(path)
+            metadata = frontmatter(text)
+            feature_id = scalar(metadata.get("id"))
+            if not feature_id:
+                self.fail(f"{relative_to_root(path, self.root)} has no frontmatter id")
+                continue
+            if feature_id in specs:
+                self.fail(f"duplicate Feature ID {feature_id}")
+            else:
+                specs[feature_id] = path
+
+            file_acs = HEADING_AC_RE.findall(text)
+            if not file_acs:
+                self.fail(f"{relative_to_root(path, self.root)} has no AC headings")
+            for ac_id in file_acs:
+                if ac_id in acs:
+                    self.fail(f"duplicate AC ID {ac_id}")
+                else:
+                    acs[ac_id] = path
+
+        if specs and acs:
+            self.pass_(f"found {len(specs)} Feature Spec(s) and {len(acs)} unique AC(s)")
+        return specs, acs
+
+    def read_work_items(
+        self, directory: Path, specs: dict[str, Path]
+    ) -> tuple[dict[str, Path], set[str]]:
+        if not directory.is_dir():
+            self.fail(f"missing Work Item directory {relative_to_root(directory, self.root)}")
+            return {}, set()
+
+        work_items: dict[str, Path] = {}
+        assigned: set[str] = set()
+        files = sorted(directory.glob("*.md"))
+        if not files:
+            self.fail(f"no Work Items in {relative_to_root(directory, self.root)}")
+            return work_items, assigned
+
+        for path in files:
+            text = read_text(path)
+            metadata = frontmatter(text)
+            item_id = scalar(metadata.get("id"))
+            feature_id = scalar(metadata.get("feature_spec"))
+            display = relative_to_root(path, self.root)
+
+            if not item_id:
+                self.fail(f"{display} has no frontmatter id")
+            elif item_id in work_items:
+                self.fail(f"duplicate Work Item ID {item_id}")
+            else:
+                work_items[item_id] = path
+
+            if not feature_id or feature_id not in specs:
+                self.fail(f"{display} references unknown Feature Spec {feature_id or '(missing)'}")
+
+            if not re.search(r"^##\s+Implementation Plan\s*$", text, re.MULTILINE):
+                self.fail(f"{display} has no Implementation Plan section")
+
+            section = markdown_section(text, "Assigned Acceptance Criteria")
+            item_acs = set(AC_RE.findall(section))
+            if not item_acs:
+                self.fail(f"{display} assigns no AC IDs")
+            assigned.update(item_acs)
+
+        if work_items:
+            self.pass_(f"found {len(work_items)} Work Item(s) with Spec references")
+        return work_items, assigned
+
+    def read_test_references(self, directories: list[Path]) -> set[str]:
+        found: set[str] = set()
+        files_read = 0
+        for directory in directories:
+            if not directory.is_dir():
+                self.fail(f"missing test directory {relative_to_root(directory, self.root)}")
+                continue
+            for path in directory.rglob("*"):
+                relative_parts = path.relative_to(directory).parts
+                if not path.is_file() or any(part.startswith(".") for part in relative_parts):
+                    continue
+                try:
+                    text = path.read_text(encoding="utf-8")
+                except (UnicodeDecodeError, OSError):
+                    continue
+                files_read += 1
+                found.update(AC_RE.findall(text))
+        if files_read:
+            self.pass_(f"scanned {files_read} test file(s) for AC references")
+        return found
+
+    def compare_ac_sets(self, expected: dict[str, Path], actual: set[str], source: str) -> None:
+        missing = sorted(set(expected) - actual)
+        unknown = sorted(actual - set(expected))
+        if missing:
+            self.fail(f"ACs missing from {source}: {', '.join(missing)}")
+        else:
+            self.pass_(f"every Spec AC is referenced by {source}")
+        if unknown:
+            self.fail(f"unknown AC references in {source}: {', '.join(unknown)}")
+
+    def read_closures(
+        self, directory: Path, specs: dict[str, Path], work_items: dict[str, Path]
+    ) -> None:
+        if not directory.is_dir():
+            self.fail(f"missing Closure directory {relative_to_root(directory, self.root)}")
+            return
+        files = sorted(directory.glob("*.md"))
+        if not files:
+            self.fail(f"no Task Closure Notes in {relative_to_root(directory, self.root)}")
+            return
+
+        referenced_specs: set[str] = set()
+        referenced_items: set[str] = set()
+        for path in files:
+            metadata = frontmatter(read_text(path))
+            display = relative_to_root(path, self.root)
+            feature_id = scalar(metadata.get("feature_spec"))
+            item_ids = string_list(metadata.get("work_items"))
+            revision = scalar(metadata.get("source_revision"))
+
+            if not feature_id or feature_id not in specs:
+                self.fail(f"{display} references unknown Feature Spec {feature_id or '(missing)'}")
+            else:
+                referenced_specs.add(feature_id)
+
+            if not item_ids:
+                self.fail(f"{display} references no Work Items")
+            for item_id in item_ids:
+                if item_id not in work_items:
+                    self.fail(f"{display} references unknown Work Item {item_id}")
+                else:
+                    referenced_items.add(item_id)
+
+            if not revision or revision.startswith("replace-"):
+                self.fail(f"{display} has no concrete source_revision")
+
+        missing_specs = sorted(set(specs) - referenced_specs)
+        missing_items = sorted(set(work_items) - referenced_items)
+        if missing_specs:
+            self.fail(f"Feature Specs missing from Closure Notes: {', '.join(missing_specs)}")
+        if missing_items:
+            self.fail(f"Work Items missing from Closure Notes: {', '.join(missing_items)}")
+        if not missing_specs and not missing_items:
+            self.pass_(f"{len(files)} Closure Note(s) reference all Specs and Work Items")
+
+
+def read_text(path: Path | None) -> str:
+    return path.read_text(encoding="utf-8") if path else ""
+
+
+def scalar(value: object) -> str | None:
+    return value if isinstance(value, str) and value else None
+
+
+def string_list(value: object) -> list[str]:
+    return [item for item in value if isinstance(item, str)] if isinstance(value, list) else []
+
+
+def frontmatter(text: str) -> dict[str, object]:
+    if not text.startswith("---\n"):
+        return {}
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        return {}
+    data: dict[str, object] = {}
+    active_list: str | None = None
+    for raw_line in text[4:end].splitlines():
+        list_match = re.match(r"^\s+-\s+(.+?)\s*$", raw_line)
+        if list_match and active_list:
+            current = data.setdefault(active_list, [])
+            if isinstance(current, list):
+                current.append(unquote(list_match.group(1)))
+            continue
+        item_match = re.match(r"^([A-Za-z_][A-Za-z0-9_-]*):\s*(.*?)\s*$", raw_line)
+        if not item_match:
+            continue
+        key, value = item_match.groups()
+        if value:
+            data[key] = unquote(value)
+            active_list = None
+        else:
+            data[key] = []
+            active_list = key
+    return data
+
+
+def unquote(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        return value[1:-1]
+    return value
+
+
+def nested_scalar(text: str, parent: str, child: str) -> str | None:
+    in_parent = False
+    for raw_line in text.splitlines():
+        if re.match(rf"^{re.escape(parent)}:\s*$", raw_line):
+            in_parent = True
+            continue
+        if in_parent and raw_line and not raw_line.startswith((" ", "\t")):
+            break
+        if in_parent:
+            match = re.match(rf"^\s+{re.escape(child)}:\s*(.+?)\s*$", raw_line)
+            if match:
+                return unquote(match.group(1))
+    return None
+
+
+def profile_paths(text: str) -> dict[str, object]:
+    result: dict[str, object] = {}
+    in_paths = False
+    active_list: str | None = None
+    for raw_line in text.splitlines():
+        if raw_line == "paths:":
+            in_paths = True
+            continue
+        if in_paths and raw_line and not raw_line.startswith((" ", "\t")):
+            break
+        if not in_paths:
+            continue
+        item_match = re.match(r"^\s{4}-\s+(.+?)\s*$", raw_line)
+        if item_match and active_list:
+            current = result.setdefault(active_list, [])
+            if isinstance(current, list):
+                current.append(unquote(item_match.group(1)))
+            continue
+        key_match = re.match(r"^\s{2}([A-Za-z_][A-Za-z0-9_-]*):\s*(.*?)\s*$", raw_line)
+        if key_match:
+            key, value = key_match.groups()
+            if value:
+                result[key] = unquote(value)
+                active_list = None
+            else:
+                result[key] = []
+                active_list = key
+    return result
+
+
+def markdown_section(text: str, heading: str) -> str:
+    match = re.search(
+        rf"^##\s+{re.escape(heading)}\s*$\n(.*?)(?=^##\s+|\Z)",
+        text,
+        re.MULTILINE | re.DOTALL,
+    )
+    return match.group(1) if match else ""
+
+
+def relative_to_root(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Check an installed AI Development Framework RC1 project."
+    )
+    parser.add_argument("project", nargs="?", default=".", help="target project root")
+    args = parser.parse_args()
+    return Doctor(Path(args.project)).run()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

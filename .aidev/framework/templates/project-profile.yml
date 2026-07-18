@@ -1,0 +1,32 @@
+schema_version: 1
+project_id: replace-me
+default_risk_level: medium
+
+paths:
+  specs: .aidev/specs
+  work_items: .aidev/work-items
+  closures: .aidev/closures
+  learning_candidates: .aidev/learning-candidates
+  tests:
+    - tests
+
+machine_checks:
+  - replace-with-project-command
+
+capabilities:
+  production_environment:
+    value: unknown
+    assessment: unassessed
+    evidence: []
+  personal_data:
+    value: unknown
+    assessment: unassessed
+    evidence: []
+  payments:
+    value: unknown
+    assessment: unassessed
+    evidence: []
+  external_messages:
+    value: unknown
+    assessment: unassessed
+    evidence: []

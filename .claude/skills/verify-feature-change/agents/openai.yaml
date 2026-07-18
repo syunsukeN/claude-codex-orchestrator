@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify Feature Change"
+  short_description: "Run independent feature verification gates"
+  default_prompt: "Use $verify-feature-change in a fresh session and run the requested verification execution."

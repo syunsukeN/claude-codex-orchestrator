@@ -1,0 +1,38 @@
+schema_version: 1
+project_id: claude-codex-orchestrator
+default_risk_level: medium
+
+paths:
+  specs: .aidev/specs
+  work_items: .aidev/work-items
+  closures: .aidev/closures
+  learning_candidates: .aidev/learning-candidates
+  tests:
+    - test
+
+machine_checks:
+  - npm run build
+  - npm run test:unit
+  - npm run test:integration
+
+capabilities:
+  production_environment:
+    value: false
+    assessment: repository-inspected
+    evidence:
+      - The extension invokes locally authenticated CLI processes and has no production deployment integration.
+  personal_data:
+    value: unknown
+    assessment: unassessed
+    evidence:
+      - Prompts and workspace content may contain user-provided information; validate per feature.
+  payments:
+    value: false
+    assessment: repository-inspected
+    evidence:
+      - No payment integration is declared in package.json or the project definition.
+  external_messages:
+    value: false
+    assessment: repository-inspected
+    evidence:
+      - The extension displays local CLI output and has no customer messaging integration.

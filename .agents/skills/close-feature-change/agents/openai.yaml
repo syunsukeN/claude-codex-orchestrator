@@ -1,0 +1,4 @@
+interface:
+  display_name: "Close Feature Change"
+  short_description: "Record task closure and optional learning"
+  default_prompt: "Use $close-feature-change to create an evidence-backed Task Closure Note."
