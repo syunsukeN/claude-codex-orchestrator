@@ -43,3 +43,13 @@ Record observable problems found while using `ai-dev-framework v0.1.0-rc.1` with
 - Impact: initial review is noisy, and later manual updates can leave the three locations out of sync.
 - Workaround: keep the RC1 copies byte-identical and verify them before committing.
 - Candidate improvement: evaluate a generated distribution, supported symlinks, or thinner tool entrypoints after the first full feature run. Do not choose a replacement before testing discovery in both tools.
+
+## FIND-RC1-005: Human-facing framework text is English-only
+
+- Stage: installation and first-use review
+- Scope: framework-wide
+- Severity: medium
+- Evidence: project settings, templates, Skill procedures, doctor messages, and evaluation documents are primarily English even though the project owner works in Japanese.
+- Impact: the human reviewer needs extra effort to understand and correct the contract, which weakens the framework's goal of human-and-AI collaboration.
+- Workaround: explain framework terms in Japanese during the experiment while leaving machine-defined identifiers unchanged.
+- Candidate improvement: use Japanese for human-facing prose in Japanese projects, while keeping schema keys, paths, IDs, Skill names, commands, and required frontmatter fields in stable English. Decide later whether the common framework should ship localized variants or generate them from one semantic source.
