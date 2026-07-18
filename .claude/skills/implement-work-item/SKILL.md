@@ -1,57 +1,57 @@
 ---
 name: implement-work-item
-description: Implement one approved Work Item from its Spec, plan, and already-failing acceptance tests, then provide machine-check evidence and explain material deviations.
+description: 承認済みWork Itemを、Spec、Implementation Plan、先に失敗する受入テストに基づいて実装するときに使う。機械検査の証拠と、大きな計画差分の理由も残す。
 ---
 
-# Implement Work Item
+# Work Itemを実装する
 
-## Goal
+## ゴール
 
-Make the smallest maintainable change that satisfies the assigned acceptance criteria without widening the approved contract.
+承認済み契約を広げず、担当ACを満たす保守可能な最小変更を作ります。
 
-## Read first
+## 最初に読むファイル
 
 - `.aidev/framework/core/roles/implementer.md`
 - `.aidev/framework/core/workflows/medium-feature-change.md`
 - `.aidev/framework/core/policies/safety-baseline.md`
 - `.aidev/project/profile.yml`
-- the approved Feature Change Spec and selected Work Item
-- the pre-implementation acceptance-test evidence
+- 承認済みFeature Change Specと対象Work Item
+- 実装前の受入テスト失敗記録
 
-Use the matching root files when working inside the framework repository.
+フレームワークリポジトリ内では、ルートの対応ファイルを使います。
 
-## Preconditions
+## 開始条件
 
-Do not begin production changes unless:
+次を満たすまで本番コードを変更しません。
 
-- `spec_gate` passed;
-- the Work Item and Implementation Plan are approved;
-- assigned ACs and verification are explicit;
-- acceptance tests fail for the intended missing behavior;
-- no blocking uncertainty remains.
+- `spec_gate`が成功している。
+- Work ItemとImplementation Planが承認されている。
+- 担当ACと検証方法が明確である。
+- 受入テストが未実装の挙動を理由に失敗している。
+- blockingの不確実性が残っていない。
 
-## Procedure
+## 手順
 
-1. Reproduce the expected failing acceptance tests.
-2. Follow the repository's existing design and project-specific instructions.
-3. Implement only the Work Item Scope and add focused lower-level tests when useful.
-4. Run the assigned AC tests and project-configured machine checks.
-5. Record material Plan Amendments and their reasons.
-6. Report actual changes, commands and results, unresolved items, and evidence for the later gate.
+1. 受入テストの想定された失敗を再現する。
+2. リポジトリの既存設計とプロジェクト固有指示に従う。
+3. Work ItemのScopeだけを実装し、必要なら対象を絞った下位テストを追加する。
+4. 担当ACのテストとProject Profileの機械検査を実行する。
+5. 大きなPlan Amendmentsと理由を記録する。
+6. 実際の変更、実行コマンドと結果、未解決事項、後続Gate用の証拠を報告する。
 
-## Stop and return for re-planning
+## 停止して再計画する条件
 
-Stop before continuing if implementation requires:
+次が必要なら続行前に止まります。
 
-- changing an AC or Scope;
-- changing a public API or data model unexpectedly;
-- adding a dependency;
-- crossing a project safety boundary;
-- raising the risk level;
-- acting on a production system.
+- ACまたはScopeの変更
+- 想定外の公開APIまたはデータモデル変更
+- 依存ライブラリの追加
+- プロジェクトの安全境界を越える操作
+- リスクレベルの上昇
+- 本番環境への作用
 
-Ordinary compile or test failures remain implementation work. Never weaken tests merely to make them pass.
+通常のコンパイル・テスト失敗は実装作業として扱います。成功させる目的でテストを弱めません。
 
-## Completion boundary
+## 完了の境界
 
-Passing tests is not final approval. The output must still pass independent `change_gate`, human review, and manual behavior confirmation.
+テスト成功だけでは最終承認になりません。独立した`change_gate`、人間レビュー、手動動作確認が必要です。

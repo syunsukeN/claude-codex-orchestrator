@@ -20,19 +20,19 @@ capabilities:
     value: false
     assessment: repository-inspected
     evidence:
-      - The extension invokes locally authenticated CLI processes and has no production deployment integration.
+      - 拡張機能はローカルで認証済みCLIを起動し、本番デプロイとの連携を持たない。
   personal_data:
     value: unknown
     assessment: unassessed
     evidence:
-      - Prompts and workspace content may contain user-provided information; validate per feature.
+      - PromptとWorkspace内容にユーザー由来情報が含まれる可能性があるため、機能ごとに確認する。
   payments:
     value: false
     assessment: repository-inspected
     evidence:
-      - No payment integration is declared in package.json or the project definition.
+      - package.jsonとプロジェクト定義に決済連携がない。
   external_messages:
     value: false
     assessment: repository-inspected
     evidence:
-      - The extension displays local CLI output and has no customer messaging integration.
+      - 拡張機能はローカルCLI出力を表示し、顧客向けメッセージ送信機能を持たない。

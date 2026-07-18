@@ -1,17 +1,17 @@
-# Manual update for RC1
+# RC2の手動更新
 
-## Goal
+## ゴール
 
-Move a target project to a new fixed framework version without overwriting project-owned instructions or hiding local changes.
+プロジェクト所有の指示を上書きせず、ローカル変更を隠さずに、対象プロジェクトを新しい固定版へ更新します。
 
-## Rules
+## ルール
 
-1. Start from a clean project branch and record the current lock file.
-2. Compare the installed `.aidev/framework/` snapshot with the current locked release. If it has local changes, stop and classify them before updating.
-3. Replace only `.aidev/framework/` with the new release snapshot.
-4. Refresh `.agents/skills/` and `.claude/skills/` from the new canonical Skill folders.
-5. Update only content between the managed markers in `AGENTS.md` and `CLAUDE.md`. Never modify text outside those markers.
-6. Update the version, commit, installation date, and managed-block hashes in `framework.lock`.
-7. Run doctor and one small evaluation case before normal use.
+1. 対象プロジェクトの作業ツリーがクリーンな状態で専用ブランチを作り、現在のlockを記録する。
+2. 導入済み`.aidev/framework/`と、lockに記録されたreleaseを比較する。ローカル変更があれば更新を止め、所属先を判断する。
+3. `.aidev/framework/`だけを新しいrelease snapshotへ置き換える。
+4. 新しいCanonical Skillから`.agents/skills/`と`.claude/skills/`を更新する。
+5. `AGENTS.md`と`CLAUDE.md`は管理マーカーの内側だけを更新する。外側を変更しない。
+6. `framework.lock`のversion、commit、installed_at、管理ブロック情報を更新する。
+7. doctorと小さな評価ケースを1件実行してから通常利用する。
 
-If a managed block differs from the value recorded in the lock, do not overwrite it automatically. Show the difference and require a human decision.
+管理ブロックに人間の変更がある場合は、自動上書きしません。差分を示し、人間の判断を求めます。

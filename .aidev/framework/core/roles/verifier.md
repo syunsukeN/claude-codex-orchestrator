@@ -1,73 +1,73 @@
-# Verifier Role Contract
+# Verifier役割契約
 
-The Verifier is one role with three executions. Run each execution in a fresh session that does not inherit the Implementer's conversation context.
+Verifierは1つの役割ですが、3つの実行に分けます。それぞれを新しいセッションで実行し、Implementerの会話コンテキストを引き継がせません。
 
 ## `spec_gate`
 
-### Input
+### 入力
 
 - Feature Change Spec
-- Project profile
-- Relevant public interfaces and existing behavior
+- Project Profile
+- 関係する公開インターフェースと現在の挙動
 
-### Check
+### 確認すること
 
-- Objective, Scope, and Out of Scope are consistent.
-- Blocking questions are resolved.
-- Requirements and ACs are unambiguous and testable.
-- Normal, failure, boundary, authorization, and relevant performance behavior are covered.
-- The stated risk level is plausible.
+- Objective、Scope、Out of Scopeが矛盾していない。
+- blockingの質問が解決している。
+- RequirementsとACが曖昧でなく、テスト可能である。
+- 正常、失敗、境界値、認可、必要な性能条件が扱われている。
+- リスクレベルが妥当である。
 
-### Output
+### 出力
 
-- `pass` or `fail`
-- Blocking findings with evidence
-- Non-blocking findings
-- Missing ACs or clarification requests
+- `pass`または`fail`
+- 証拠付きのblocking指摘
+- non-blocking指摘
+- 不足しているACまたは確認質問
 
-Do not review implementation code, implementation plans, or Implementer self-evaluation in this execution.
+この実行では、実装コード、Implementation Plan、Implementerの自己評価を見ません。
 
 ## `acceptance_test`
 
-### Input
+### 入力
 
-- Approved Feature Change Spec
-- Approved Work Items and assigned ACs
-- Public interfaces and existing test conventions
+- 承認済みFeature Change Spec
+- 承認済みWork Itemと担当AC
+- 公開インターフェースと既存テストの慣習
 
-### Output
+### 出力
 
-- Acceptance or contract tests that reference AC IDs
-- A record showing each new test fails before implementation for the intended reason
-- Findings when a Work Item cannot be independently verified
+- AC-IDを参照する受入テストまたは契約テスト
+- 各テストが実装前に意図した理由で失敗した記録
+- Work Itemを独立検証できない場合の指摘
 
-Do not implement production behavior. Do not change the AC contract to fit existing code.
+本番コードを実装しません。既存コードへ合わせるためにACを変更しません。
 
 ## `change_gate`
 
-### Input
+### 入力
 
-- Approved Feature Change Spec and ACs
-- Work Items and Implementation Plans
-- Acceptance tests
-- Implementation diff
-- CI or local verification evidence
+- 承認済みFeature Change SpecとAC
+- Work ItemとImplementation Plan
+- 受入テスト
+- 実装差分
+- CIまたはローカル検証の証拠
 - Plan Amendments
 
-### Check
+### 確認すること
 
-- AC-by-AC result
-- Spec, tests, and implementation consistency
-- Missing or weak tests
-- Out-of-scope changes
-- Unexplained Plan deviations
-- Risk changes and safety issues
+- ACごとの結果
+- Spec、テスト、実装の整合性
+- 不足または弱いテスト
+- Scope外の変更
+- 理由のない計画逸脱
+- リスク変化と安全上の問題
 
-### Output
+### 出力
 
-- `pass` or `fail`
-- Findings ordered by severity with evidence
-- AC coverage table
-- Required follow-ups
+- `pass`または`fail`
+- 重要度順の証拠付き指摘
+- ACカバレッジ表
+- 必要な対応
 
-Do not fix the implementation during the gate. Return findings to the appropriate stage.
+このGate中に実装を修正しません。指摘を適切な工程へ返します。

@@ -1,4 +1,4 @@
 interface:
-  display_name: "Close Feature Change"
-  short_description: "Record task closure and optional learning"
-  default_prompt: "Use $close-feature-change to create an evidence-backed Task Closure Note."
+  display_name: "Feature Changeを完了記録"
+  short_description: "検証証拠からTask Closureと必要な学び候補を記録"
+  default_prompt: "$close-feature-changeを使って、証拠に基づくTask Closure Noteを作成してください。"

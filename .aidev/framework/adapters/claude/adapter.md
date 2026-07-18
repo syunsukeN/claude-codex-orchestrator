@@ -1,7 +1,7 @@
 # Claude Adapter
 
-The project's existing `CLAUDE.md` remains the source of project instructions. Add the managed block from `distribution/managed-blocks/CLAUDE.md`; it imports `bootstrap.md` from the installed snapshot.
+既存の`CLAUDE.md`をプロジェクト指示の正本として残します。`distribution/managed-blocks/CLAUDE.md`の管理ブロックだけを追加すると、導入済みスナップショットの`bootstrap.md`が読み込まれます。
 
-Install the same canonical universal Skill folders used by Codex under `.claude/skills/`. Do not fork their content unless a model-specific difference has been observed and documented.
+Codexと同じCanonical Universal Skillを`.claude/skills/`へ導入します。モデル固有の差異が実際に確認・記録されるまで、内容を分岐させません。
 
-The import loads at startup, so `bootstrap.md` stays small. Detailed role procedures remain in Skills and are loaded for the relevant task.
+インポートは起動時に読み込まれるため、`bootstrap.md`を短く保ちます。詳しい役割手順は、必要なときだけ読むSkillへ置きます。

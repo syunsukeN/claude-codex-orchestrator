@@ -1,47 +1,47 @@
 ---
 name: plan-work-items
-description: Split an approved Feature Change Spec into independently verifiable Work Items and create a minimal repository-grounded Implementation Plan before editing code.
+description: 承認済みFeature Change Specを、独立して検証できるWork Itemへ分割し、コード編集前にリポジトリ調査に基づく最小Implementation Planを作るときに使う。
 ---
 
-# Plan Work Items
+# Work Itemを計画する
 
-## Goal
+## ゴール
 
-Produce small, reviewable Work Items that together cover every acceptance criterion, then plan each item from repository evidence.
+全ACを漏れなく扱う、小さくレビュー可能なWork Itemを作り、リポジトリの事実に基づいて計画します。
 
-## Read first
+## 最初に読むファイル
 
 - `.aidev/framework/core/workflows/medium-feature-change.md`
 - `.aidev/framework/core/roles/planner.md`
 - `.aidev/framework/templates/work-item.md`
 - `.aidev/project/profile.yml`
-- the approved Feature Change Spec
+- 承認済みFeature Change Spec
 
-Use the matching root files when working inside the framework repository.
+フレームワークリポジトリ内では、ルートの対応ファイルを使います。
 
-## Procedure
+## 手順
 
-1. Confirm that `spec_gate` has passed. Do not silently repair an unapproved Spec.
-2. Group ACs by an independently implementable and verifiable outcome, not by technical layer and not automatically one AC per item.
-3. Give each Work Item one objective, assigned ACs, Scope, Out of Scope, dependencies, and verification mapping.
-4. Ensure every AC is assigned and the dependency graph has no cycle.
-5. Keep security and data-protection invariants in the same deliverable slice as the behavior they protect.
-6. Inspect the repository read-only to understand existing design, conventions, interfaces, and tests.
-7. Fill `Existing Design`, `Expected Changes`, `Execution Order`, `Verification`, and `Risks and Uncertainties`.
-8. Stop before editing production code or tests.
+1. `spec_gate`が成功していることを確認する。未承認Specを黙って修正しない。
+2. 技術レイヤーやACごとに機械的分割せず、独立して実装・検証できる結果ごとにACをまとめる。
+3. 各Work Itemへ1つのObjective、担当AC、Scope、Out of Scope、Dependencies、Verificationを設定する。
+4. 全ACが割り当てられ、依存関係に循環がないことを確認する。
+5. セキュリティとデータ保護の条件を、それが守る挙動と同じ変更単位へ含める。
+6. リポジトリを読み取り専用で調査し、既存設計、慣習、インターフェース、テストを確認する。
+7. `Existing Design`、`Expected Changes`、`Execution Order`、`Verification`、`Risks and Uncertainties`を記入する。
+8. 本番コードやテストを編集する前に止まる。
 
-## Re-plan when
+## 再計画する条件
 
-Stop and return to the appropriate artifact if planning reveals:
+次が判明したら停止し、適切な成果物へ戻ります。
 
-- a required Scope change;
-- a public API or data-model change not covered by the Spec;
-- a new dependency;
-- a higher risk level;
-- a Work Item that cannot be verified independently.
+- Scope変更が必要である。
+- Specで扱っていない公開APIまたはデータモデル変更が必要である。
+- 新しい依存ライブラリが必要である。
+- リスクレベルが上がる。
+- Work Itemを独立検証できない。
 
-Minor file-name or execution-order discoveries may be recorded later as Plan Amendments.
+小さなファイル名や作業順序の変更は、後でPlan Amendmentsへ記録できます。
 
-## Required output
+## 必要な出力
 
-Write Work Items to the project profile's `paths.work_items` directory. Each item must reference its Spec and AC IDs; do not copy the full AC text.
+Project Profileの`paths.work_items`へWork Itemを書きます。各Work ItemからSpecとAC-IDを参照し、AC本文はコピーしません。

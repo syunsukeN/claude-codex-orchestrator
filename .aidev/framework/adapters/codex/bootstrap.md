@@ -1,23 +1,23 @@
 # Codex Bootstrap
 
-This adapter connects Codex to the installed framework without replacing project instructions.
+このAdapterは、プロジェクト固有指示を置き換えずにCodexとフレームワークを接続します。
 
-## Discovery
+## 読み込み方法
 
-- Keep project-specific instructions in the project's existing `AGENTS.md` files.
-- Add only the provided managed block to the root `AGENTS.md`.
-- Install universal Skills under `.agents/skills/<skill-name>/SKILL.md`.
-- Keep the fixed framework snapshot under `.aidev/framework/`.
+- プロジェクト固有指示は、既存の`AGENTS.md`に残す。
+- ルート`AGENTS.md`へ、配布された管理ブロックだけを追加する。
+- Universal Skillを`.agents/skills/<skill-name>/SKILL.md`へ導入する。
+- 固定版フレームワークを`.aidev/framework/`へ配置する。
 
-Codex has no framework-defined general Markdown import directive equivalent to Claude's `@path`. Therefore the managed `AGENTS.md` block contains the minimum always-on contract and points to Skills for task-specific detail.
+Codexには、Claudeの`@path`と同等なフレームワーク用Markdownインポート構文がありません。そのため、管理ブロックへ常時必要な最小契約を書き、タスク固有の詳細はSkillから読み込みます。
 
-## Precedence
+## 優先順位
 
-Apply instructions in this order:
+次の順番で指示を適用します。
 
-1. enforced permissions, sandboxing, and CI controls;
-2. project-specific safety and development rules;
-3. the framework safety baseline and workflow;
-4. personal preferences.
+1. 強制された権限、Sandbox、CI制御
+2. プロジェクト固有の安全ルールと開発ルール
+3. フレームワークの安全基準とワークフロー
+4. 個人の作業上の好み
 
-Project rules may strengthen the safety baseline but must not weaken it. Remove contradictions rather than expecting the model to resolve them reliably.
+プロジェクトルールは安全基準を厳しくできますが、弱めることはできません。モデルへ矛盾解決を期待せず、矛盾する指示自体を取り除きます。

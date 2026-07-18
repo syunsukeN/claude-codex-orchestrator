@@ -1,4 +1,4 @@
 interface:
-  display_name: "Define Feature Change"
-  short_description: "Create a testable Feature Change Spec"
-  default_prompt: "Use $define-feature-change to turn this request into an approved Feature Change Spec."
+  display_name: "Feature Changeを定義"
+  short_description: "曖昧な要求から検証可能なFeature Change Specを作成"
+  default_prompt: "$define-feature-changeを使って、この要求を承認可能なFeature Change Specへ整理してください。"

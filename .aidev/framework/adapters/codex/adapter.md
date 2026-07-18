@@ -1,7 +1,7 @@
 # Codex Adapter
 
-The project's existing `AGENTS.md` remains the source of project instructions. Add the managed block from `distribution/managed-blocks/AGENTS.md`; never replace the whole file.
+既存の`AGENTS.md`をプロジェクト指示の正本として残します。`distribution/managed-blocks/AGENTS.md`の管理ブロックだけを追加し、ファイル全体を置き換えません。
 
-Install the canonical universal Skill folders under `.agents/skills/`. The managed block contains only the always-needed contract; detailed procedures remain in Skills.
+Canonical Universal Skillを`.agents/skills/`へ導入します。常時必要な契約だけを管理ブロックへ置き、詳しい手順はSkillへ残します。
 
-Do not create `AGENTS.override.md` for the framework. An override file can suppress ordinary instructions in the same directory and is reserved for a project owner's deliberate choice.
+フレームワークのために`AGENTS.override.md`を作りません。同じディレクトリの通常指示を無効にする可能性があるため、プロジェクト所有者が意図的に選ぶ場合だけ使用します。

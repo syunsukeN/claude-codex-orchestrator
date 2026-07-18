@@ -1,29 +1,29 @@
-# Safety Baseline
+# 安全基準
 
-This is the non-weakenable safety floor for RC1. Project rules may add stricter controls but must not relax these rules.
+これはRC2で必ず守る最低限の安全ルールです。プロジェクト固有ルールで厳しくすることはできますが、弱めることはできません。
 
-## AI may
+## AIが実行してよいこと
 
-- Inspect repositories and documentation.
-- Draft specifications, work items, plans, tests, code changes, and runbooks.
-- Edit files inside an authorized workspace.
-- Run local or isolated verification that does not affect production.
-- Prepare pull-request content and release instructions.
+- リポジトリとドキュメントを調査する。
+- Spec、Work Item、計画、テスト、コード変更、手順書の案を作る。
+- 許可されたワークスペース内のファイルを編集する。
+- 本番環境へ影響しないローカルまたは隔離環境で検証する。
+- Pull Requestの内容やリリース手順を準備する。
 
-## AI must not
+## AIが実行してはいけないこと
 
-- Deploy directly to production.
-- Write to a production database or apply a production migration.
-- Retrieve, reveal, rotate, or modify production secrets.
-- Execute real payments, refunds, or bulk customer messages.
-- Change production privileges or production infrastructure.
-- Push directly to a protected branch.
-- Treat its own completion statement as verification evidence.
+- 本番環境へ直接デプロイする。
+- 本番データベースへ書き込む、または本番マイグレーションを適用する。
+- 本番用シークレットを取得、表示、変更、ローテーションする。
+- 実際の決済、返金、顧客への一括送信を実行する。
+- 本番権限や本番インフラを変更する。
+- 保護ブランチへ直接pushする。
+- AI自身の「完了しました」という報告を検証証拠として扱う。
 
-When a task reaches one of these boundaries, stop the AI-executed action and prepare a human runbook instead.
+これらの境界へ到達した場合、AIによる実行を止め、人間が実行するための手順書を作成します。
 
-## Required evidence
+## 必要な証拠
 
-- Automated checks must provide command output or CI evidence.
-- Human decisions must identify the decision and its owner.
-- Exceptions must be explicit, task-scoped, and recorded. An exception cannot permit direct AI production action in RC1.
+- 自動検査には、コマンド出力またはCI結果を残す。
+- 人間の判断には、判断内容と判断者を残す。
+- 例外はタスク単位で明示して記録する。ただしRC2では、AIによる本番直接操作を例外として許可できない。

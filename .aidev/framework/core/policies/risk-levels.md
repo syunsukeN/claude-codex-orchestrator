@@ -1,14 +1,14 @@
-# Risk Levels
+# リスクレベル
 
-RC1 implements and validates only the `medium` workflow.
+RC2で実装・検証するのは`medium`ワークフローだけです。
 
-| Level | RC1 status | Meaning |
+| レベル | RC2の状態 | 意味 |
 |---|---|---|
-| `low` | `defined_not_validated` | A small change with limited impact. The detailed workflow is deferred. |
-| `medium` | `implemented` | A normal feature change that requires the full RC1 contract. |
-| `high` | `defined_not_validated` | A change with serious impact or difficult recovery. Use stronger project-specific controls and human review; the detailed workflow is deferred. |
+| `low` | `defined_not_validated` | 影響が小さい変更。詳しい運用は未検証です。 |
+| `medium` | `implemented` | RC2の一連の契約を適用する通常の機能変更です。 |
+| `high` | `defined_not_validated` | 重大な影響または復旧困難性がある変更。より強いプロジェクト固有制御と人間確認が必要ですが、詳しい運用は未検証です。 |
 
-## Medium contract
+## Mediumの契約
 
 ```yaml
 feature_spec: required
@@ -24,4 +24,4 @@ closure_note: required
 learning_candidate: optional
 ```
 
-Authentication, authorization, payments, personal data, destructive data changes, public APIs, production infrastructure, and difficult-to-reverse migrations are high-risk indicators. RC1 records them but does not claim to implement a validated high-risk workflow.
+認証、認可、決済、個人情報、破壊的なデータ変更、公開API、本番インフラ、元に戻すのが難しいマイグレーションは高リスクの目印です。RC2では検出・記録しますが、高リスク運用を検証済みとは扱いません。

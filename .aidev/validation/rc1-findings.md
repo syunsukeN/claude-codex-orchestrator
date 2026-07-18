@@ -1,55 +1,60 @@
-# RC1 Validation Findings
+# RC1検証で見つかった改善点
 
-## Goal
+## ゴール
 
-Record observable problems found while using `ai-dev-framework v0.1.0-rc.1` without changing the installed snapshot during the experiment.
+`ai-dev-framework v0.1.0-rc.1`を実際に使って確認できた問題を記録し、実験途中で固定スナップショットを変更しない。
 
-## FIND-RC1-001: Doctor cannot validate installation by itself
+## FIND-RC1-001：doctorで導入だけを検査できない
 
-- Stage: installation
-- Scope: framework-wide
-- Severity: medium
-- Evidence: lock, installed version, and both managed blocks passed, but doctor exited with failure because no Spec, Work Item, or Closure existed before the first task began.
-- Impact: a user cannot distinguish a broken installation from a correctly installed but not-yet-executed workflow by exit status alone.
-- Workaround: inspect the installation-related PASS results and treat artifact failures as expected until a feature run is closed.
-- Candidate improvement: add an explicit `install` or `setup` stage to doctor while keeping the current closed-run validation as a separate stage.
+- 工程：導入
+- 適用範囲：フレームワーク共通
+- 重要度：medium
+- 証拠：lock、version、2つの管理ブロックは成功したが、最初のタスク前なのでSpec、Work Item、Closure不足によりdoctor全体が失敗した。
+- 影響：壊れた導入と、正しく導入済みだが未実行の状態を終了コードだけで区別できない。
+- 回避方法：導入関連のPASS結果を個別確認し、最初のClosureまで成果物不足を想定内と扱う。
+- 改善候補：doctorへ`install`または`setup`工程を追加し、完了タスク検査と分ける。
+- RC2状態：未解決。既知の制約として導入手順へ明記した。
 
-## FIND-RC1-002: Empty AC sets produce misleading PASS messages
+## FIND-RC1-002：ACが0件でも誤解を招くPASSが表示される
 
-- Stage: installation
-- Scope: framework-wide
-- Severity: low
-- Evidence: with zero Specs, doctor printed that every Spec AC was referenced by Work Items and test source.
-- Impact: the output sounds complete even though there are no ACs to verify.
-- Workaround: read the earlier `no Feature Change Specs` failure.
-- Candidate improvement: skip AC comparison or report `not checked` when the expected AC set is empty.
+- 工程：導入
+- 適用範囲：フレームワーク共通
+- 重要度：low
+- 証拠：Specが0件でも、全Spec ACがWork Itemとテストから参照されているとdoctorが表示した。
+- 影響：確認するACが存在しないのに、追跡が完成したように見える。
+- 回避方法：先に表示される「Feature Change Specがありません」というFAILを確認する。
+- 改善候補：期待するACが0件なら比較を行わず、`not checked`として報告する。
+- RC2状態：未解決。
 
-## FIND-RC1-003: Evaluation files are not listed in the manual snapshot copy step
+## FIND-RC1-003：手動コピー対象に評価用ファイルが含まれていない
 
-- Stage: installation
-- Scope: framework-wide
-- Severity: low
-- Evidence: the installation guide lists core, templates, adapters, skills, and VERSION, while the real experiment also needs the RC1 evaluation checklist and doctor.
-- Impact: a target project can be installed without the evidence checklist needed to judge the experiment.
-- Workaround: include `eval/`, `docs/`, and `scripts/` in the fixed snapshot for this run.
-- Candidate improvement: define one explicit snapshot manifest instead of describing directories in prose.
+- 工程：導入
+- 適用範囲：フレームワーク共通
+- 重要度：low
+- 証拠：導入手順にはcore、templates、adapters、skills、VERSIONが書かれていたが、実験には評価チェックリストとdoctorも必要だった。
+- 影響：実験の合否を判断するファイルがない状態で導入できてしまう。
+- 回避方法：この実験では`eval/`、`docs/`、`scripts/`も固定スナップショットへ含めた。
+- 改善候補：文章の列挙ではなく、明確なsnapshot manifestを定義する。
+- RC2状態：一部解決。導入手順へ対象を追加したが、manifestは未実装。
 
-## FIND-RC1-004: Skill discovery copies create a large duplicated installation
+## FIND-RC1-004：Skill発見用コピーで導入差分が大きい
 
-- Stage: installation
-- Scope: framework-wide
-- Severity: medium
-- Evidence: the installation adds 62 files and about 2,100 lines; each of the five Skills exists in the fixed snapshot, `.agents/skills/`, and `.claude/skills/`.
-- Impact: initial review is noisy, and later manual updates can leave the three locations out of sync.
-- Workaround: keep the RC1 copies byte-identical and verify them before committing.
-- Candidate improvement: evaluate a generated distribution, supported symlinks, or thinner tool entrypoints after the first full feature run. Do not choose a replacement before testing discovery in both tools.
+- 工程：導入
+- 適用範囲：フレームワーク共通
+- 重要度：medium
+- 証拠：初回導入は62ファイル、約2,100行で、5つのSkillが固定スナップショット、`.agents/skills/`、`.claude/skills/`の3か所に存在した。
+- 影響：初回レビューが読みにくく、手動更新後に3か所が一致しない可能性がある。
+- 回避方法：RC1では3か所をbyte単位で比較してからcommitした。
+- 改善候補：最初のFeature Change完了後に、生成配布、対応済みsymlink、薄いAdapter入口を比較する。
+- RC2状態：未解決。比較検証を続ける。
 
-## FIND-RC1-005: Human-facing framework text is English-only
+## FIND-RC1-005：人間向け文章が英語だけで書かれている
 
-- Stage: installation and first-use review
-- Scope: framework-wide
-- Severity: medium
-- Evidence: project settings, templates, Skill procedures, doctor messages, and evaluation documents are primarily English even though the project owner works in Japanese.
-- Impact: the human reviewer needs extra effort to understand and correct the contract, which weakens the framework's goal of human-and-AI collaboration.
-- Workaround: explain framework terms in Japanese during the experiment while leaving machine-defined identifiers unchanged.
-- Candidate improvement: use Japanese for human-facing prose in Japanese projects, while keeping schema keys, paths, IDs, Skill names, commands, and required frontmatter fields in stable English. Decide later whether the common framework should ship localized variants or generate them from one semantic source.
+- 工程：導入と初回確認
+- 適用範囲：フレームワーク共通
+- 重要度：medium
+- 証拠：日本語を使うプロジェクト所有者に対し、設定、Template、Skill、doctor、評価文書が主に英語だった。
+- 影響：人間による契約確認の負担が増え、Human-in-the-loopの品質を下げる。
+- 回避方法：機械向け識別子は維持し、実験中の用語を会話で日本語説明した。
+- 改善候補：日本語プロジェクトでは人間向け文章を日本語にし、schema key、path、ID、Skill名、command、必須frontmatterは英語で固定する。
+- RC2状態：解決。人間向け文章を日本語化し、機械向け識別子を守る回帰テストを追加した。

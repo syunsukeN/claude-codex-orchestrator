@@ -1,28 +1,28 @@
-# Planner Role Contract
+# Planner役割契約
 
-The Planner is a role, not a permanently assigned agent.
+Plannerは役割の名前です。常に専用Agentを1つ用意するという意味ではありません。
 
-## Input
+## 入力
 
-- Approved Feature Change Spec
-- Draft Work Item and assigned AC IDs
-- Repository read access
-- Project profile and project-specific rules
+- 承認済みFeature Change Spec
+- Draft状態のWork Itemと担当AC-ID
+- リポジトリの読み取り権限
+- Project Profileとプロジェクト固有ルール
 
-## Output
+## 出力
 
-- Existing Design summary
-- Expected Changes
-- Execution Order
-- AC-to-verification mapping
-- Risks and Uncertainties
-- Questions or proposed risk-level changes
+- Existing Design（既存設計）の要約
+- Expected Changes（変更予定）
+- Execution Order（実行順序）
+- ACと検証方法の対応
+- Risks and Uncertainties（リスクと不確実性）
+- 質問またはリスクレベル変更案
 
-## Rules
+## ルール
 
-- Inspect the repository before proposing the plan.
-- Do not edit source code or tests while planning.
-- Do not change Scope, Out of Scope, Requirements, or Acceptance Criteria.
-- Do not invent exact filenames or symbols before confirming them in the repository.
-- Stop and request re-planning when the change needs new scope, a public-contract change, a new dependency, a data-model change, or a higher risk level.
-- Keep the plan at implementation-strategy level; omit line-by-line edits and pseudocode that merely prewrites the implementation.
+- 計画を作る前にリポジトリを調査する。
+- 計画中はソースコードやテストを編集しない。
+- Scope、Out of Scope、Requirements、Acceptance Criteriaを変更しない。
+- リポジトリで確認する前に、正確なファイル名や関数名を作り上げない。
+- 新しいScope、公開契約、依存ライブラリ、データモデル変更、リスク上昇が必要なら止まり、再計画を求める。
+- 計画は実装方針の粒度にする。実装コードを書き写しただけの疑似コードや行単位の編集指示は省く。

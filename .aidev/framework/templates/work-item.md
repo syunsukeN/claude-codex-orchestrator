@@ -5,11 +5,11 @@ feature_spec: FEATURE-001
 status: draft
 ---
 
-# Work Item: Replace with one independently verifiable objective
+# Work Item: 独立して検証できる1つの目的へ置き換える
 
 ## Objective
 
-State the one outcome this Work Item delivers.
+このWork Itemが実現する結果を1つ書きます。
 
 ## Assigned Acceptance Criteria
 
@@ -17,43 +17,43 @@ State the one outcome this Work Item delivers.
 
 ## Scope
 
-- Included implementation area
+- 今回含める実装範囲
 
 ## Out of Scope
 
-- Excluded implementation area
+- 今回含めない実装範囲
 
 ## Dependencies
 
-- `none` or another Work Item with the required interface
+- `none`または、先に必要なインターフェースを提供するWork Item
 
 ## Implementation Plan
 
 ### Existing Design
 
-- Relevant design confirmed from repository inspection
+- リポジトリ調査で確認した既存設計
 
 ### Expected Changes
 
-- Component or responsibility expected to change
+- 変更予定のコンポーネントまたは責務
 
 ### Execution Order
 
-1. Confirm the failing acceptance-test baseline.
-2. Implement the smallest scoped behavior.
-3. Add implementation-level tests.
-4. Run configured verification.
+1. 受入テストが想定どおり失敗することを確認する。
+2. Scope内の最小実装を行う。
+3. 実装レベルのテストを追加する。
+4. 設定された検証を実行する。
 
 ### Verification
 
-| AC ID | Planned test or check |
+| AC ID | 予定するテストまたは確認 |
 |---|---|
-| AC-F001-01 | Test path or verification description |
+| AC-F001-01 | テストパスまたは検証方法 |
 
 ### Risks and Uncertainties
 
-- Known uncertainty or `none`
+- 分かっている不確実性、または`none`
 
 ## Plan Amendments
 
-- `none`, or explain a material plan change and why it does not silently change the Spec contract
+- `none`、または大きな計画変更と、その変更がSpec契約を勝手に変えていない理由

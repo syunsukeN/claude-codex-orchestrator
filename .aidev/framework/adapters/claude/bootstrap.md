@@ -1,15 +1,15 @@
 # AI Development Framework Bootstrap
 
-Use the installed medium-risk Feature Change workflow for behavior changes.
+挙動を変更する場合は、導入済みのMedium Feature Changeワークフローを使用します。
 
-Always apply:
+常に次を守ります。
 
-- Project-specific instructions take precedence over ordinary framework conventions.
-- Project rules may strengthen, but never weaken, `.aidev/framework/core/policies/safety-baseline.md`.
-- Read only the workflow and Skill files needed for the current stage.
-- Do not implement before the Spec, assigned Work Item, plan, and failing acceptance-test evidence are ready.
-- Run `spec_gate`, `acceptance_test`, and `change_gate` in fresh sessions as defined by the Verifier contract.
-- AI self-report is not completion evidence; machine checks and human review are required.
-- Stop when Scope, contract, dependency, risk, or production-system authority changes.
+- プロジェクト固有指示を、通常のフレームワーク規約より優先する。
+- プロジェクトルールは`.aidev/framework/core/policies/safety-baseline.md`を厳しくできるが、弱めることはできない。
+- 現在の工程に必要なワークフローとSkillだけを読む。
+- Spec、担当Work Item、計画、失敗する受入テストが準備できるまで実装しない。
+- Verifier契約に従い、`spec_gate`、`acceptance_test`、`change_gate`を新しいセッションで実行する。
+- AIの自己申告を完了証拠にせず、機械検査と人間レビューを必要とする。
+- Scope、契約、依存関係、リスク、本番操作の権限が変わる場合は停止する。
 
-Universal Skills are installed under `.claude/skills/`. The fixed source snapshot is under `.aidev/framework/`.
+Universal Skillは`.claude/skills/`、固定版の正本は`.aidev/framework/`にあります。

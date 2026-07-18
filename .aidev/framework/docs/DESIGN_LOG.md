@@ -1,56 +1,62 @@
-# RC1 Design Log
+# RC2設計ログ
 
-This log separates decisions from unverified beliefs so that a successful demo is not mistaken for proof.
+成功したデモを証明と勘違いしないように、決定事項と未検証の前提を分けて記録します。
 
-## Decisions
+## 決定事項
 
-- RC1 covers one medium-risk behavior-change workflow from requirements through closure. Low and high risk are described but not validated.
-- Feature Change Spec is the change contract. Work Items contain minimal plans. Closure records actual results.
-- Work Items are independently verifiable vertical outcomes and trace assigned AC IDs; they do not duplicate AC text.
-- Planner, Implementer, and Verifier are roles, not a required number of agents.
-- Verifier's `spec_gate`, `acceptance_test`, and `change_gate` run in fresh sessions.
-- Acceptance tests are written and shown to fail for the intended reason before production implementation.
-- Task Closure Note is required; Project Learning Candidate is optional.
-- A project installs a fixed snapshot plus a lock file. Framework and application Git histories remain separate.
-- Existing `AGENTS.md` and `CLAUDE.md` remain project-owned. Only a marked framework block is managed.
-- Canonical Skills have one source and are copied to the discovery directories used by Codex and Claude.
-- Doctor checks structure and traceability, not semantic correctness.
+- RC2は、要件整理からClosureまでのmediumリスク挙動変更を1つ扱う。low/highは説明のみで未検証とする。
+- Feature Change Specを変更契約の正本にする。Work Itemに最小計画を持たせ、Closureへ実際の結果を記録する。
+- Work Itemは独立検証可能な縦の変更単位とし、担当AC-IDを参照する。AC本文は複製しない。
+- Planner、Implementer、Verifierは役割であり、必要Agent数ではない。
+- Verifierの`spec_gate`、`acceptance_test`、`change_gate`は新しいセッションで実行する。
+- 受入テストを本番実装前に作り、意図した理由で失敗することを確認する。
+- Task Closure Noteは必須、Project Learning Candidateは必要な場合だけ作る。
+- 固定スナップショットとlockを対象プロジェクトへ導入し、フレームワークとアプリのGit履歴を分ける。
+- 既存`AGENTS.md`と`CLAUDE.md`はプロジェクト所有とし、マーカー内だけをフレームワークが管理する。
+- Canonical Skillを1つの正本とし、CodexとClaudeの発見場所へコピーする。
+- doctorは構造と参照を検査し、意味の正しさは判定しない。
+- 人間向け文章は日本語を基本にし、機械参照するYAMLキー、ID、パス、Skill名、コマンドは英語で固定する。
 
-## Rejected for RC1
+## RC2で却下した選択肢
 
-- Full CLI installer and automatic updater: maintenance cost precedes evidence of a stable layout. Reconsider after repeated manual installations.
-- Automatic adapter generation: premature while the two entrypoints are short. Reconsider when duplication causes real drift.
-- Required multiple models: model count is not a quality gate. Reconsider only with evaluation evidence for specific review tasks.
-- Multi-agent orchestration: unnecessary for one sequential feature workflow. Reconsider for independently parallel work with measurable benefit.
-- Separate Requirements, Technical Spec, and AC documents: synchronization cost is too high for the first small validation.
-- Git submodule, subtree, or framework-history merge: more update and operator complexity than fixed copy for RC1.
-- Mandatory learning artifact per task: encourages invented lessons.
+- 高機能Installer・自動Updater：安定した配置の証拠より先に保守コストが発生する。手動導入を繰り返した後に再検討する。
+- Adapter自動生成：短い入口の重複では費用に見合わない。実際に差分がずれたら再検討する。
+- 複数モデルの必須化：モデル数は品質Gateではない。特定レビューで評価結果が出た場合だけ再検討する。
+- Multi-Agent Orchestration：順番に進む1機能フローには不要。独立並行作業の効果を測れる場合に再検討する。
+- Requirements、Technical Spec、ACの文書分割：最初の小さな検証では同期コストが高すぎる。
+- Git submodule、subtree、履歴merge：RC2の固定コピーより更新操作が複雑になる。
+- 毎タスクの学び文書必須化：存在しない学びを作る圧力になる。
+- 人間向け文章をすべて英語に固定：日本語利用者の確認負担が増え、Human-in-the-loopの品質を下げる。
 
-## Assumptions
+## 仮定
 
-- A medium-risk feature is representative enough to expose the main handoff problems.
-- Teams can create separate Verifier sessions even if they use the same model.
-- Projects can tolerate copied Skill folders during RC1.
-- AC IDs in tests provide useful structural traceability, while humans verify test meaning.
-- The managed-block approach is understandable and does not create excessive instruction conflict.
+- mediumリスク機能1件で、主な工程間の問題を見つけられる。
+- 同じモデルを使う場合でも、Verifier用の別セッションを作れる。
+- RC2ではSkillフォルダのコピーを受け入れられる。
+- テスト内のAC-IDで構造的な追跡ができ、テストの意味は人間とVerifierが確認できる。
+- 管理ブロック方式を理解でき、指示矛盾を増やしすぎない。
+- 日本語の人間向け説明でも、CodexとClaudeが役割契約を安定して実行できる。
 
-## Open questions
+## 未決事項
 
-- Is manual dual-copy of Skills acceptable in repeated installations?
-- Are Feature Spec and Work Item templates short enough for normal use?
-- Does a separate acceptance-test session create more value than overhead?
-- Which doctor findings should become errors versus warnings?
-- How should accepted Feature Change Specs update long-lived product documentation?
-- Should the decision log later split into dedicated decision, assumption, validation, and change files?
+- Skillを2つの発見場所へ手動コピーする負担を許容できるか。
+- Feature SpecとWork Itemテンプレートは通常利用に十分短いか。
+- 別セッションの受入テスト作成が負担以上の価値を生むか。
+- doctorのどの指摘をerrorとwarningにするか。
+- 採用済みFeature Changeを長期的な現行仕様へどう反映するか。
+- 設計ログを将来、決定・仮定・検証・変更の別ファイルへ分けるか。
+- 共通フレームワークが多言語版を持つか、1つの意味定義から生成するか。
 
-## Validation items
+## 検証項目
 
-- Complete the RC1 checklist in one sample project.
-- Measure where the human must correct or repeat AI output.
-- Seed at least one known inconsistency and verify that an independent gate detects it.
-- Check that both Codex and Claude discover their installed Skills and project instructions.
-- Update from one RC snapshot to the next without changing project-owned text.
+- サンプルプロジェクトでRC2チェックリストを完了する。
+- 人間がAI出力を修正または繰り返した場所を測る。
+- 既知の不整合を少なくとも1件入れ、独立Gateが検出することを確認する。
+- CodexとClaudeが導入済みSkillとプロジェクト指示を読み込むことを確認する。
+- プロジェクト所有文章を変更せず、RC版を更新できることを確認する。
+- 日本語化によって理解しやすくなり、Skillの発見・実行が壊れないことを確認する。
 
-## Change history
+## 変更履歴
 
-- `0.1.0-rc.1`: initial frozen contract for real-project validation.
+- `0.1.0-rc.1`：実プロジェクト検証用の最初の固定契約。
+- `0.1.0-rc.2`：人間向け文章を日本語化し、導入実験で不足した配布対象と既知のdoctor制約を明記。

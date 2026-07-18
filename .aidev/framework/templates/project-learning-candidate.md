@@ -6,37 +6,37 @@ status: candidate
 suggested_scope: project
 ---
 
-# Project Learning Candidate: Replace with title
+# Project Learning Candidate: タイトルへ置き換える
 
 ## Problem
 
-Describe the repeatable problem, not the entire task history.
+タスク全体の履歴ではなく、繰り返し起きる可能性がある問題を書きます。
 
 ## Evidence
 
-- Closure, review, test, or incident evidence
+- Closure、レビュー、テスト、Incidentなどの証拠
 
 ## Suspected Cause
 
-State the cause as a hypothesis when it is not proven.
+原因が未確認なら、仮説であることを明示します。
 
 ## Suggested Change
 
-Describe the proposed Project Spec, Rule, Skill, or evaluation change.
+Project Spec、Rule、Skill、評価ケースなどへの変更案を書きます。
 
 ## Suggested Destination
 
-- Project Spec, Project Rule, Project Skill, Stack Skill, or common-framework candidate
+- Project Spec、Project Rule、Project Skill、Stack Skill、共通フレームワーク候補
 
 ## Applicability
 
-Describe where the learning should and should not apply.
+この学びを適用する範囲と、適用しない範囲を書きます。
 
 ## Cost and Risk
 
-- Added workflow cost
-- Possible false positives or unwanted constraints
+- 追加される作業負担
+- 誤検出または不要な制約の可能性
 
 ## Evaluation Idea
 
-Describe how to determine whether the proposed change prevents the problem.
+提案した変更が問題を防ぐか確認する方法を書きます。

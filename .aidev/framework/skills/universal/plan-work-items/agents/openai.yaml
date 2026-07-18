@@ -1,4 +1,4 @@
 interface:
-  display_name: "Plan Work Items"
-  short_description: "Plan independently verifiable work items"
-  default_prompt: "Use $plan-work-items to split the approved Spec and plan each Work Item."
+  display_name: "Work Itemを計画"
+  short_description: "承認済みSpecを独立検証可能なWork Itemへ分割・計画"
+  default_prompt: "$plan-work-itemsを使って、承認済みSpecをWork Itemへ分割し、計画してください。"

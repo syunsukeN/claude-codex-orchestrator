@@ -1,119 +1,119 @@
-# Medium Feature Change Workflow
+# Medium Feature Changeワークフロー
 
-This is the only workflow implemented and validated by RC1. Roles do not imply three simultaneous agents; separate sessions may use the same model.
+RC2で実装・検証する唯一のワークフローです。役割を分けることは、3つのAgentを同時に動かすことではありません。同じモデルを別セッションで使うこともできます。
 
-## Flow
+## 全体の流れ
 
 ```text
-Request
+要求
   -> Feature Change Spec
   -> Verifier: spec_gate
-  -> Work Item decomposition + verification design
+  -> Work Item分解と検証設計
   -> Planner: Implementation Plan
-  -> Verifier: failing acceptance tests
+  -> Verifier: 先に失敗する受入テスト
   -> Implementer
-  -> automated verification
+  -> 自動検証
   -> Verifier: change_gate
-  -> human review and manual behavior check
+  -> 人間レビューと手動動作確認
   -> Task Closure Note
-  -> optional Project Learning Candidate
+  -> 必要な場合だけProject Learning Candidate
 ```
 
 ## 1. Feature Change Spec
 
-Input: ambiguous request, repository evidence, and human decisions.
+入力：曖昧な要求、リポジトリから確認した事実、人間の判断。
 
-Output: one approved Feature Change Spec with project-wide unique Requirement and AC IDs.
+出力：Requirement IDとAC-IDがプロジェクト内で重複しない、承認済みFeature Change Spec。
 
-Exit conditions:
+終了条件：
 
-- Objective, Scope, and Out of Scope are explicit.
-- Blocking questions are resolved.
-- ACs are testable.
-- Verification Strategy covers every AC.
-- Risk is recorded as `medium`.
+- Objective、Scope、Out of Scopeが明確である。
+- blockingの質問が解決している。
+- ACがテスト可能である。
+- Verification Strategyが全ACを扱っている。
+- リスクが`medium`として記録されている。
 
-Return here when requirements, ACs, scope, or risk are unclear or changed.
+要求、AC、Scope、リスクが不明または変更されたらここへ戻ります。
 
 ## 2. `spec_gate`
 
-Run the Verifier in a fresh session. Do not provide implementation plans or code.
+Verifierを新しいセッションで実行します。Implementation Planや実装コードは渡しません。
 
-Exit condition: no blocking findings remain and a human accepts the Spec contract.
+終了条件：blocking指摘がなくなり、人間がSpec契約を承認する。
 
-Return to the Feature Change Spec for missing or conflicting behavior.
+挙動の不足や矛盾があればFeature Change Specへ戻ります。
 
-## 3. Work Items and verification design
+## 3. Work Itemと検証設計
 
-Decompose by independently verifiable vertical change, not by technical layer or one Issue per AC.
+技術レイヤー単位やACごとに機械的分割せず、独立して実装・検証できる縦の変更単位へ分けます。
 
-Outputs:
+出力：
 
-- Every AC is assigned to at least one Work Item.
-- Each Work Item has one objective, Scope, Out of Scope, dependencies, and a verification mapping.
-- Cross-cutting safety invariants ship with the behavior they protect.
-- No cyclic dependency or ambiguous verification responsibility remains.
+- 全ACが少なくとも1つのWork Itemへ割り当てられている。
+- 各Work Itemに1つの目的、Scope、Out of Scope、依存関係、検証対応がある。
+- 安全を守る横断条件が、保護対象の挙動と同時に提供される。
+- 循環依存や曖昧な検証責任がない。
 
-Return to decomposition when a Work Item cannot be implemented and verified independently.
+Work Itemを独立実装・検証できない場合は分解へ戻ります。
 
 ## 4. Implementation Plan
 
-The Planner inspects the repository without editing implementation code, then fills the Work Item's plan sections.
+Plannerがコードを編集せずリポジトリを調査し、Work Item内の計画を記入します。
 
-Exit condition: the plan identifies existing design, expected changes, order, verification, and uncertainties without changing the Spec contract.
+終了条件：Spec契約を変更せず、Existing Design、Expected Changes、Execution Order、Verification、Risks and Uncertaintiesが示されている。
 
-Return to the Work Item for plan corrections. Return to the Spec when the plan reveals a contract change.
+計画の誤りはWork Itemへ戻します。契約変更が必要ならSpecへ戻します。
 
-## 5. Failing acceptance tests
+## 5. 先に失敗する受入テスト
 
-Run the Verifier's `acceptance_test` execution in a fresh session.
+Verifierの`acceptance_test`を新しいセッションで実行します。
 
-Exit conditions:
+終了条件：
 
-- Tests reference their AC IDs.
-- Every AC has a structural test reference.
-- New tests fail before implementation.
-- The failure is caused by missing behavior, not broken setup or syntax.
+- テストがAC-IDを参照する。
+- 全ACにテスト参照がある。
+- 新しいテストが実装前に失敗する。
+- 失敗理由が未実装の挙動であり、構文、環境、セットアップ不良ではない。
 
-Return to the Spec for a wrong contract, Work Items for a wrong verification boundary, or tests for an incorrect failure.
+契約が誤っていればSpec、検証境界が誤っていればWork Item、失敗方法が誤っていればテストへ戻ります。
 
-## 6. Implementation
+## 6. 実装
 
-Run the Implementer with approved artifacts and the failing tests.
+Implementerへ承認済み成果物と失敗中のテストを渡します。
 
-Exit conditions:
+終了条件：
 
-- Assigned AC tests pass.
-- Project-configured build, lint, type-check, and test commands pass when applicable.
-- Plan Amendments explain material deviations.
-- No unresolved scope or risk increase remains.
+- 担当ACのテストが成功する。
+- 対象プロジェクトのBuild、Lint、Type Check、Testが必要に応じて成功する。
+- 大きな計画逸脱がPlan Amendmentsで説明されている。
+- 未解決のScope変更やリスク上昇がない。
 
-Return to implementation for ordinary test failures. Stop and re-plan for scope, contract, dependency, data-model, or risk changes.
+通常のテスト失敗は実装へ戻します。Scope、契約、依存関係、データモデル、リスクが変わる場合は止まって再計画します。
 
 ## 7. `change_gate`
 
-Run the Verifier in another fresh session.
+Verifierを別の新しいセッションで実行します。
 
-Exit conditions:
+終了条件：
 
-- Every AC has a supported pass/fail judgment.
-- No blocking mismatch, missing test, unsafe partial state, or out-of-scope change remains.
-- Verification evidence is available.
+- 全ACに証拠付きの判定がある。
+- blockingとなる不一致、不足テスト、危険な途中状態、Scope外変更がない。
+- 検証証拠を確認できる。
 
-Return to the Spec, Work Item, tests, or Implementer according to the finding.
+指摘内容に応じてSpec、Work Item、テスト、Implementerへ戻ります。
 
-## 8. Human review and manual behavior check
+## 8. 人間レビューと手動動作確認
 
-The human confirms business intent, reviews material findings, and observes the feature behavior. AI self-report is not sufficient.
+人間が業務上の意図、重要な指摘、実際の挙動を確認します。AIの自己申告だけでは完了できません。
 
-Exit condition: the human accepts the change or returns it to an earlier stage.
+終了条件：人間が変更を承認する、または前工程へ戻す。
 
 ## 9. Task Closure Note
 
-Create one closure snapshot that references the Spec, Work Items, source revision, verification, actual changes, deviations, findings, and unresolved items.
+Spec、Work Item、対象リビジョン、検証、実際の変更、計画差分、指摘、未解決事項を参照するClosureを1つ作ります。
 
-Return to the Closure Note when it does not match the evidence.
+証拠と一致しなければClosure Noteを修正します。
 
-## 10. Optional Project Learning Candidate
+## 10. 任意のProject Learning Candidate
 
-Create a separate candidate only when the result contains a reusable project-level improvement. Do not manufacture a learning for every task. Formal promotion requires later human review.
+再利用できるプロジェクト改善がある場合だけ、別の候補を作ります。毎回無理に学びを作りません。正式採用には、後で人間の確認が必要です。

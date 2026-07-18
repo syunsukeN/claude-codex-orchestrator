@@ -1,21 +1,21 @@
-# Project Instructions
+# プロジェクト固有指示
 
-`CLAUDE.md` is the existing project-definition source. Read it before planning or implementing a change, including its technology stack, phased scope, TDD rules, and license constraints.
+`CLAUDE.md`が既存のプロジェクト定義の正本です。計画または実装を始める前に読み、技術スタック、PhaseごとのScope、TDDルール、ライセンス制約を確認してください。
 
-Use the commands defined in `package.json`. Do not edit generated files under `dist/` directly; update their sources and rebuild instead.
+コマンドは`package.json`に定義されたものを使用します。`dist/`配下の生成ファイルを直接編集せず、元のソースを変更してBuildし直してください。
 
-<!-- aidev-managed:start version=0.1.0-rc.1 -->
+<!-- aidev-managed:start version=0.1.0-rc.2 -->
 
 ## AI Development Framework
 
-Goal: make a behavior change traceable from an approved Spec to independent verification.
+ゴール：承認済みSpecから独立検証まで、挙動変更を追跡可能にする。
 
-- Project-specific instructions take precedence over ordinary framework conventions.
-- Project rules may strengthen, but never weaken, `.aidev/framework/core/policies/safety-baseline.md`.
-- For behavior changes, use `.aidev/framework/core/workflows/medium-feature-change.md`.
-- Use the task-specific Skills installed under `.agents/skills/`.
-- Do not implement before the Spec, assigned Work Item, plan, and intentionally failing acceptance tests are ready.
-- Run Verifier gates in fresh sessions; AI self-report is not completion evidence.
-- Stop when Scope, contract, dependency, risk, or production-system authority changes.
+- プロジェクト固有指示を、通常のフレームワーク規約より優先する。
+- プロジェクトルールは`.aidev/framework/core/policies/safety-baseline.md`を厳しくできるが、弱めることはできない。
+- 挙動変更では`.aidev/framework/core/workflows/medium-feature-change.md`を使用する。
+- `.agents/skills/`に導入されたタスク固有Skillを使用する。
+- Spec、担当Work Item、計画、意図した理由で失敗する受入テストが準備できるまで実装しない。
+- Verifier Gateを新しいセッションで実行し、AIの自己申告を完了証拠にしない。
+- Scope、契約、依存関係、リスク、本番操作の権限が変わる場合は停止する。
 
 <!-- aidev-managed:end -->

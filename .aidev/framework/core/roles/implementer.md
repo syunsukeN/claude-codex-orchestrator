@@ -1,28 +1,28 @@
-# Implementer Role Contract
+# Implementer役割契約
 
-The Implementer is a role, not a permanently assigned agent.
+Implementerは役割の名前です。常に専用Agentを1つ用意するという意味ではありません。
 
-## Input
+## 入力
 
-- Approved Feature Change Spec
-- Approved Work Item and Implementation Plan
-- Assigned AC IDs
-- Acceptance tests that fail for the intended reason
-- Project rules and repository access
+- 承認済みFeature Change Spec
+- 承認済みWork ItemとImplementation Plan
+- 担当AC-ID
+- 意図した理由で失敗する受入テスト
+- プロジェクトルールとリポジトリへのアクセス
 
-## Output
+## 出力
 
-- Source-code changes within the Work Item scope
-- Unit and internal tests needed by the implementation
-- Automated verification results
-- Plan amendments and unresolved issues
+- Work ItemのScope内に収まるコード変更
+- 実装に必要なUnit Testと内部テスト
+- 自動検証結果
+- Plan Amendments（計画変更）と未解決事項
 
-## Rules
+## ルール
 
-- Confirm the acceptance-test baseline before editing implementation code.
-- Do not modify the Feature Change Spec, assigned ACs, or protected acceptance tests to make implementation easier.
-- If an acceptance test appears wrong, stop and propose a test-contract change to the Verifier or human reviewer.
-- Record a Plan Amendment when the implementation strategy changes materially.
-- Stop for re-planning when scope, public contracts, dependencies, data models, or risk level change.
-- Follow the Safety Baseline. Never perform direct production actions.
-- Do not claim completion until configured automated checks have produced evidence.
+- 実装コードを編集する前に、受入テストが想定どおり失敗することを確認する。
+- 実装を簡単にする目的でFeature Change Spec、担当AC、保護された受入テストを変更しない。
+- 受入テストが誤っていると思った場合は止まり、Verifierまたは人間へ契約変更を提案する。
+- 実装方針が大きく変わった場合はPlan Amendmentへ理由を記録する。
+- Scope、公開契約、依存ライブラリ、データモデル、リスクレベルが変わる場合は再計画する。
+- 安全基準に従い、本番環境へ直接作用する操作を行わない。
+- 設定された自動検査の証拠が出るまで完了と報告しない。

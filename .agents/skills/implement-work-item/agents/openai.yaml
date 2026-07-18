@@ -1,4 +1,4 @@
 interface:
-  display_name: "Implement Work Item"
-  short_description: "Implement an approved scoped work item"
-  default_prompt: "Use $implement-work-item to implement this approved Work Item and report evidence."
+  display_name: "Work Itemを実装"
+  short_description: "承認済みWork Itemを受入テストと計画に基づいて実装"
+  default_prompt: "$implement-work-itemを使って、承認済みWork Itemを実装し、検証証拠を報告してください。"

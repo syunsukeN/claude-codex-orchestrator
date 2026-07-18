@@ -10,48 +10,48 @@ risk_level: medium
 learning_candidate: none
 ---
 
-# Task Closure: Replace with title
+# Task Closure: タイトルへ置き換える
 
 ## Summary
 
-Summarize the delivered change in one or two sentences.
+実際に提供した変更を1〜2文でまとめます。
 
 ## Outcome
 
-- Status: success, partial, failed, or rolled_back
-- Released: yes, no, or not_applicable
-- Rollback required: yes or no
+- Status: `success`、`partial`、`failed`、`rolled_back`
+- Released: `yes`、`no`、`not_applicable`
+- Rollback required: `yes`または`no`
 
 ## References
 
 - Feature Change Spec: `FEATURE-001`
 - Work Items: `WORK-F001-01`
-- Change or PR: reference
-- Verification: CI run or local evidence reference
+- Change or PR: 参照先
+- Verification: CI結果またはローカル証拠
 
 ## Actual Changes
 
-- Material behavior or component changed
+- 実際に変わった挙動またはコンポーネント
 
 ## Verification Summary
 
 | Check | Result | Evidence |
 |---|---|---|
-| AC-F001-01 | passed or failed | Test or review reference |
+| AC-F001-01 | `passed`または`failed` | テストまたはレビューの参照先 |
 
 ## Plan Deviations
 
-- `none`, or explain the deviation and reason
+- `none`、または計画との差と理由
 
 ## Findings
 
-- Important review or verification finding, or `none`
+- 重要なレビュー・検証指摘、または`none`
 
 ## Unresolved Items
 
-- Remaining limitation or `none`
+- 残っている制約、または`none`
 
 ## Learning
 
-- Candidate exists: no
-- Candidate reference: none
+- Candidate exists: `no`
+- Candidate reference: `none`

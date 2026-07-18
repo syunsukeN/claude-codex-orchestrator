@@ -69,7 +69,7 @@ VSCode内で動く個人用AIオーケストレーション拡張機能。1つ�
     - GitHub公開: リポジトリ公開＋LICENSE追加
     - Marketplace公開: PAT取得＋publisher作成＋vsce publish
 
-<!-- aidev-managed:start version=0.1.0-rc.1 -->
+<!-- aidev-managed:start version=0.1.0-rc.2 -->
 
 @.aidev/framework/adapters/claude/bootstrap.md
 
